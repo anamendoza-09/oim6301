@@ -94,7 +94,6 @@ def _(cost, tax):
     total_cost = float(cost) + float(tax)
     print(total_cost)
     # print(f'The cost is ${cost:.2f}. Total is ${total_cost:.2f}.')
-
     return
 
 
@@ -305,7 +304,6 @@ def _():
         print('Pass')
     else:
         print('Fail')
-
     return
 
 
@@ -342,6 +340,33 @@ def _(mo):
 def _():
     statuses = ["shipped", "pending", "shipped", "cancelled", "shipped"]
     statuses
+    return (statuses,)
+
+
+@app.cell
+def _(statuses):
+    shipped_count = 0
+    for status in statuses:
+        if status == "shipped":
+            shipped_count += 1
+            print(shipped_count)
+    return (shipped_count,)
+
+
+@app.cell
+def _(statuses):
+    not_shipped_count = 0
+    for state in statuses:
+        if state != "shipped":
+            not_shipped_count += 1
+            print(not_shipped_count)
+    return
+
+
+@app.cell
+def _(shipped_count, statuses):
+    percent_shipped = shipped_count / len(statuses) * 100
+    print(f"{percent_shipped}% shipped")
     return
 
 
@@ -371,6 +396,32 @@ def _():
     order_lines = ["notebook", "pen"]
     order_lines.append(["stapler", "tape"])
     len(order_lines)
+    return (order_lines,)
+
+
+@app.cell
+def _(order_lines):
+    print(order_lines[2])
+    return
+
+
+@app.cell
+def _():
+    def _():
+        order_lines = ["notebook", "pen"]
+        order_lines.extend(["stapler", "tape"])
+        return len(order_lines)
+
+
+    _()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    append adds one item to the list, even if that one item is itself a whole list filled with other things.
+    """)
     return
 
 
@@ -401,6 +452,20 @@ def _():
     print(sorted(tickers))
     print(tickers.sort())
     tickers
+    return (tickers,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    tickers.sort() reorganizes the list in place and gives nothing back, while sorted(tickers) leaves the original list untouched and returns a new sorted list instead.
+    """)
+    return
+
+
+@app.cell
+def _(tickers):
+    print(sorted(tickers, reverse = True))
     return
 
 
@@ -434,9 +499,23 @@ def _(mo):
 @app.cell
 def _():
     prices = [12.50, 8.00, 19.99]
-    sale_prices = prices
+    sale_prices = prices[:]
     sale_prices.append(4.99)
     prices
+    return prices, sale_prices
+
+
+@app.cell
+def _(prices, sale_prices):
+    prices is sale_prices
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    you would want two names pointing at the same list when different parts of your code all need to see the same up-to-date data.
+    """)
     return
 
 
