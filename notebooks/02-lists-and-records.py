@@ -85,7 +85,7 @@ def _():
 
 @app.cell
 def _(cost):
-    cost * 10
+    float(cost) * 10
     return
 
 
@@ -213,10 +213,42 @@ def _(mo):
 
 
 @app.cell
+def _(charges):
+    charges[0]
+    return
+
+
+@app.cell
+def _(charges):
+    charges[-1]
+    return
+
+
+@app.cell
+def _(charges):
+    charges[5]
+    return
+
+
+@app.cell
+def _(charges):
+    def _():
+        total = 0
+        for charge in charges:
+            if charge < 25:
+                total = total + charge
+        return total
+
+
+    _()
+    return
+
+
+@app.cell
 def _():
     charges = [16.75, 22.25, 25.00, 20.25, 36.25]
     charges
-    return
+    return (charges,)
 
 
 @app.cell(hide_code=True)
@@ -367,7 +399,7 @@ def _(statuses):
 def _(shipped_count, statuses):
     percent_shipped = shipped_count / len(statuses) * 100
     print(f"{percent_shipped}% shipped")
-    return
+    return (percent_shipped,)
 
 
 @app.cell(hide_code=True)
@@ -422,6 +454,15 @@ def _(mo):
     mo.md(r"""
     append adds one item to the list, even if that one item is itself a whole list filled with other things.
     """)
+    return
+
+
+@app.cell
+def _(orders):
+    total_freight = 0
+    for order in orders:
+        total_freight = total_freight + order["Freight"]
+    print(f"Total freight: ${total_freight:.2f}")
     return
 
 
@@ -550,6 +591,26 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
+    "100" + "50" united/blended the two values together instead of adding them. This occurs because they are strings, not numbers. Therefore, it is reasonable because the "+" is telling python to join the text.
+    """)
+    return
+
+
+@app.cell
+def _():
+    print(int("100") + int("50"))
+    return
+
+
+@app.cell
+def _():
+    print(float("100.5"))
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     > **Advanced · G · Off the end.** `charges` in section 2 holds last week's five freight
     > charges. This one has no cell of its own, because every line in it fails on
     > purpose and a notebook that raises on load is a nuisance.
@@ -566,6 +627,53 @@ def _(mo):
     > `3 of 5 orders shipped (60%)`. An f-string is the short way to build a sentence out of
     > values, and it was section 5 of last week's notebook.
     """)
+    return
+
+
+@app.cell
+def _(charges):
+    charges[5]
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    There is no item 5 because that would be the 6th item. Python runs the numbers from 0-4.
+    """)
+    return
+
+
+@app.cell
+def _(charges):
+    charges[-1]
+    charges[len(charges)-1]
+    return
+
+
+@app.cell
+def _(charges):
+    charges[-6]
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    An error ocurred because the indexes run from -1 to -5, just like when I run charges[-6]
+    """)
+    return
+
+
+@app.cell
+def _(percent_shipped, shipped_count, statuses):
+    print(f"{shipped_count} of {len(statuses)} orders shipped")
+    print(f"{shipped_count} of {len(statuses)} orders shipped ({percent_shipped:.0f}%)")
+    return
+
+
+@app.cell
+def _():
     return
 
 
@@ -625,6 +733,24 @@ def _(mo):
     Two of them fail, and both give the same kind of error. Add a cell and find out
     which, and what the message says. A `KeyError` names the key it could not find.
     """)
+    return
+
+
+@app.cell
+def _(first_order):
+    first_order["Freight"]
+    return
+
+
+@app.cell
+def _(first_order):
+    first_order["freight"]
+    return
+
+
+@app.cell
+def _(first_order):
+    first_order[0]
     return
 
 
@@ -717,6 +843,47 @@ def _(mo):
     return
 
 
+@app.cell
+def _(orders):
+    def _():
+        total_freight = 0
+        for order in orders:
+            total_freight += order["Freight"]
+        return print(total_freight)
+
+
+    _()
+    return
+
+
+@app.cell
+def _(orders):
+    def _():
+        no_shipped_count = 0
+        for order in orders:
+            if order["ShippedDate"] is None:
+                no_shipped_count += 1
+        return print(no_shipped_count)
+
+
+    _()
+    return
+
+
+@app.cell
+def _(orders):
+    def _():
+        largest_order = orders[0]
+        for order in orders:
+            if order["Freight"] > largest_order["Freight"]:
+                largest_order = order
+        return print(largest_order["OrderID"], largest_order["Freight"])
+
+
+    _()
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -741,6 +908,14 @@ def _(mo):
 
     *(Replace this line with your own sentence. If this cell shows you code instead of
     text, use the cell menu to turn it into a markdown cell.)*
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    One row is one order that a customer placed with the warehouse, including where it was shipped and what the freight cost was.
     """)
     return
 
@@ -778,7 +953,65 @@ def _():
         {"Symbol": "TSLA", "Shares": 150, "Price": 255.70},
     ]
     portfolio
+    return (portfolio,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    for each holding, multiply its share count by its price to get what that holding costs. Then add up all six of those costs to get the total cost of the portfolio.
+    """)
     return
+
+
+@app.cell
+def _(portfolio):
+    total_portfolio_cost = 0
+    for holding in portfolio:
+        holding_cost = holding["Shares"] * holding["Price"]
+        total_portfolio_cost = total_portfolio_cost + holding_cost
+
+    print(f"Total portfolio cost: ${total_portfolio_cost:.2f}")
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    ## ✏️ A Similar Problem: The Supply Order
+
+    A warehouse order has several line items, each with a quantity and a unit price.
+    Your job: find the **total cost of the whole order**.
+
+    The data is in the cell below. Write your own cell, using a `for` loop and a
+    running total, the same way you did for the portfolio.
+
+    **Check yourself: $1,347.50.**
+    """)
+    return
+
+
+@app.cell
+def _(supply_order):
+    total_order_cost = 0
+    for item in supply_order: 
+        item_cost = item["Quantity"] * item["UnitPrice"]
+        total_order_cost =  total_order_cost + item_cost
+    print(f"Total_order_cost: ${total_order_cost:.2f}")
+    return
+
+
+@app.cell
+def _():
+    supply_order = [
+        {"Item": "Paper", "Quantity": 20, "UnitPrice": 4.25},
+        {"Item": "Toner", "Quantity": 5, "UnitPrice": 89.00},
+        {"Item": "Staples", "Quantity": 30, "UnitPrice": 2.50},
+        {"Item": "Folders", "Quantity": 50, "UnitPrice": 1.20},
+        {"Item": "Pens", "Quantity": 100, "UnitPrice": 0.75},
+    ]
+    supply_order
+    return (supply_order,)
 
 
 @app.cell(hide_code=True)
