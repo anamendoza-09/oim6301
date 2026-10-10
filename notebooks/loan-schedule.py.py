@@ -113,6 +113,22 @@ def _(annual_rates, loan_amount):
 
 
 @app.cell
+def _(annual_rates, loan_amount):
+    def _():
+        payments = {}
+        for term_years in annual_rates:
+            r = annual_rates[term_years] / 12
+            n = term_years * 12
+            payment = loan_amount * r / (1 - (1 + r) ** -n)
+            payments[term_years] = payment
+        return payments
+
+
+    _()
+    return
+
+
+@app.cell
 def _():
     return
 
