@@ -119,7 +119,7 @@ def _(annual_rates, loan_amount):
         for term_years in annual_rates:
             r = annual_rates[term_years] / 12
             n = term_years * 12
-            payment = loan_amount * r / (1 - (1 + r) ** -n)
+            payment = round(loan_amount * r / (1 - (1 + r) ** -n), 2)
             payments[term_years] = payment
         return payments
 
@@ -129,7 +129,45 @@ def _(annual_rates, loan_amount):
 
 
 @app.cell
-def _():
+def _(annual_rates, loan_amount):
+    schedules = {}
+    for _term_years in annual_rates:
+        _r = annual_rates[_term_years] / 12
+        _n = _term_years * 12
+        _payment = round(loan_amount * _r / (1 - (1 + _r) ** -_n), 2)
+
+        _balance = loan_amount
+        _schedule = []
+        for _month in range(1, _n + 1):
+            _interest = round(_balance * _r, 2)
+            if _month < _n:
+                _principal = round(_payment - _interest, 2)
+            else:
+                _principal = _balance
+            _balance = round(_balance - _principal, 2)
+            _schedule.append({
+                "month": _month,
+                "payment": _payment,
+                "interest": _interest,
+                "principal": _principal,
+                "balance": _balance,
+            })
+        schedules[_term_years] = _schedule
+
+    schedules
+    return (schedules,)
+
+
+@app.cell
+def _(schedules):
+    schedules[30][-1]
+    ["balance"]
+    return
+
+
+@app.cell
+def _(schedules):
+    len(schedules[30])
     return
 
 
