@@ -114,18 +114,13 @@ def _(annual_rates, loan_amount):
 
 @app.cell
 def _(annual_rates, loan_amount):
-    def _():
-        payments = {}
-        for term_years in annual_rates:
-            r = annual_rates[term_years] / 12
-            n = term_years * 12
-            payment = round(loan_amount * r / (1 - (1 + r) ** -n), 2)
-            payments[term_years] = payment
-        return payments
-
-
-    _()
-    return
+    payments = {}
+    for _term_years in annual_rates:
+        _r = annual_rates[_term_years] / 12
+        _n = _term_years * 12
+        payments[_term_years] = round(loan_amount * _r / (1 - (1 + _r) ** -_n), 2)
+    payments
+    return (payments,)
 
 
 @app.cell
@@ -171,6 +166,19 @@ def _(schedules):
     return
 
 
+@app.cell
+def _(annual_rates, schedules):
+    def _():
+        total_interest = {}
+        for term_years in annual_rates:
+            total_interest[term_years] = round(sum(row["interest"] for row in schedules[term_years]),2)
+        return total_interest
+
+
+    _()
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -182,7 +190,25 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(annual_rates, schedules):
+    total_interest = {}
+    for _term_years in annual_rates:
+        total_interest[_term_years] = round(sum(row["interest"] for row in schedules[_term_years]), 2)
+    total_interest
+    return (total_interest,)
+
+
+@app.cell
+def _(annual_rates, payments, total_interest):
+    def _():
+        for term_years in annual_rates:
+            print(f"{term_years}-year loan: payment = ${payments[term_years]:,.2f}, total interest = ${total_interest[term_years]:,.2f}")
+            print(f"For a $400,000 loan, the 30-year mortgage at 7.03% has a lower monthly payment  (${payments[30]:,.2f})"
+                  f"than the 15-year at 6.42% (${payments[15]:,.2f}), but the 15-year loan saves"
+                  f"${total_interest[30] - total_interest[15]:,.2f} in total interest over the life of the loan")
+
+
+    _()
     return
 
 
@@ -197,7 +223,23 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(annual_rates, loan_amount, schedules):
+    def _():
+        for term_years in annual_rates:
+            total_principal_paid = round(sum(row["principal"] for row in schedules[term_years]), 2)
+            final_balance = schedules[term_years][-1]["balance"]
+        return print(f"{term_years}-year: total principal paid = ${total_principal_paid:,.2f}, loan amount = ${loan_amount:,.2f}, final balance = {final_balance}")
+
+
+    _()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    *I summed the principal-paid column across each schedule and compared it to the original loan amount, which summed to $ 400,000, matching the loan amount exactly. With a final balance of $0.*
+    """)
     return
 
 
@@ -211,6 +253,14 @@ def _(mo):
     *If the agent got it right the first time: what did you do to verify that?*
     """)
     return
+
+
+app._unparsable_cell(
+    r"""
+    *When I was completing section 5, the AI agent suggested to add "return" before printing statements,however, I did not take it because it would have returned "none" instead of the sentence itself. 
+    """,
+    name="_"
+)
 
 
 @app.cell(hide_code=True)
