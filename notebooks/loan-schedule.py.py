@@ -87,8 +87,9 @@ def _(mo):
 
 @app.cell
 def _():
-    # Your inputs.
-    return
+    loan_amount = 400000
+    annual_rates = {30: 0.0703, 15: 0.0642}
+    return annual_rates, loan_amount
 
 
 @app.cell(hide_code=True)
@@ -98,6 +99,16 @@ def _(mo):
 
     Add as many cells as you need. Try each step yourself before you ask your agent, and commit as you go.
     """)
+    return
+
+
+@app.cell
+def _(annual_rates, loan_amount):
+    term_years = 30
+    r = annual_rates[term_years] / 12
+    n = term_years * 12
+    payment = loan_amount * r / (1 - (1 + r) ** -n)
+    payment
     return
 
 
