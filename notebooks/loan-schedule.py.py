@@ -154,6 +154,53 @@ def _(annual_rates, loan_amount):
 
 
 @app.cell
+def _(annual_rates, loan_amount):
+    extra_payment = 200
+
+    schedules_extra = {}
+    for _term_years in annual_rates:
+        _r = annual_rates[_term_years] / 12
+        _n = _term_years * 12
+        _payment = round(loan_amount * _r / (1 - (1 + _r) ** -_n), 2)
+
+        _balance = loan_amount
+        _schedule = []
+        for _month in range(1, _n + 1):
+            _interest = round(_balance * _r, 2)
+            _principal = round(_payment + extra_payment - _interest, 2)
+            if _principal > _balance:
+                _principal = _balance
+            _balance = round(_balance - _principal, 2)
+            _schedule.append({
+                "month": _month,
+                "payment": _payment + extra_payment,
+                "interest": _interest,
+                "principal": _principal,
+                "balance": _balance,
+            })
+            if _balance <= 0:
+                break
+        schedules_extra[_term_years] = _schedule
+
+    schedules_extra
+    return (schedules_extra,)
+
+
+@app.cell
+def _(annual_rates, schedules, schedules_extra, total_interest):
+    months_saved = {}
+    interest_saved = {}
+    for _term_years in annual_rates:
+        months_saved[_term_years] = len(schedules[_term_years]) - len(schedules_extra[_term_years])
+        _total_interest_extra = round(sum(row["interest"] for row in schedules_extra[_term_years]), 2)
+        interest_saved[_term_years] = round(total_interest[_term_years] - _total_interest_extra, 2)
+
+    for _term_years in annual_rates:
+        print(f"{_term_years}-year loan: pays off {months_saved[_term_years]} months sooner, saving ${interest_saved[_term_years]:,.2f} in interest.")
+    return
+
+
+@app.cell
 def _(schedules):
     schedules[30][-1]
     ["balance"]
@@ -255,12 +302,12 @@ def _(mo):
     return
 
 
-app._unparsable_cell(
-    r"""
-    *When I was completing section 5, the AI agent suggested to add "return" before printing statements,however, I did not take it because it would have returned "none" instead of the sentence itself. 
-    """,
-    name="_"
-)
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    *When I was completing section 5, the AI agent suggested adding "return" before printing statements; however, I did not take it because it would have returned "none" instead of the sentence itself. I was getting errors, and the code wasn't running properly, in addition to other errors that contributed.*
+    """)
+    return
 
 
 @app.cell(hide_code=True)
@@ -269,6 +316,14 @@ def _(mo):
     ## 8. Going Further
 
     *Take at least one step past the main task, in any direction, and use your agent as much as you like. It does not have to work. State what you tried, what you found, and where it is in this notebook.*
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    *Working with AI, I aimed to complete the what if you pay an extra $200 every month. How many months, and how much interest, does that save on each loan? Speaking with my agent, I told it I was thinking to just add "Schedule extra" to the exisitng table we had. The AI agent liked the idea, and by itself computed the code in the tables. However, there were areas I did not understand at first glance. For example, the AI used a function called `amortization_schedule` that took an additional parameter, `extra_payment`, and recalculated the balance after each month by subtracting both the regular payment and the extra $200 from the principal. I had to trace through the logic manually to understand how the extra payment was reducing the loan term and the total interest paid, since the function reused the same loop structure as the original schedule but added a conditional check to stop once the balance reached zero.*
     """)
     return
 
