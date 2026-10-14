@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "oim6301": {
+      "type": "http",
+      "url": "https://oim-mcp.zhili.dev/oim6301/mcp"
+    }
+  }
+}

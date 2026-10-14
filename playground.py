@@ -48,10 +48,14 @@ app._unparsable_cell(
     # We need to put a [0] in fronto fo the list```python
     my_list = [0] + my_list
     ```
-
     """,
     name="_"
 )
+
+
+@app.cell
+def _():
+    return
 
 
 if __name__ == "__main__":
