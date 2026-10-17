@@ -470,6 +470,38 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
+    1. A list because it is ordered, many of the same type, and the customer can add/remove/reorder, meaning that it must be ordered and changeable.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    2. A set because you need to know whether a given customer ordered this year, with no order or extra details attached.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    3. A dictionary because you look up the product name (the key) with a value unit attached to each.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    4. A tuple because it is one shipment with three named parts, and that must never change once recorded.
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
     ## ✏️ D · The portfolio again
 
     Notebook 2 held the six holdings as a list of dictionaries. Here they are as a list of tuples, one holding per tuple.
@@ -485,6 +517,14 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    1. I would rather work with tuples because unpacking it into named variables is just as readable as dictionary keys, and the structure field order never changes.
+    """)
+    return
+
+
 @app.cell
 def _():
     holdings = [
@@ -496,6 +536,72 @@ def _():
         ("TSLA", 150, 255.70),
     ]
     holdings
+    return (holdings,)
+
+
+@app.cell
+def _(holdings):
+    total_cost = 0
+    for _symbol, _shares, _price in holdings:
+        total_cost += _shares * _price
+
+    print(f"${total_cost:,.2f}")
+    return
+
+
+@app.cell
+def _(holdings):
+    # AI's approach
+    costs = []
+    for _symbol, _shares, _price in holdings:
+        costs.append(_shares * _price)
+    portfolio_cost = sum(costs)
+    portfolio_cost
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(r"""
+    Two lines differ from your version, and here is why:
+
+    - **`total_cost += _shares * _price` vs. `costs.append(_shares * _price)`.** Yours keeps a **running total** — one number that grows by a little each time through the loop, the same pattern as `total` in the freight charges exercise. Mine instead builds a **list** of each holding's cost first, and only adds them all up at the very end, with `sum(costs)`. Both reach the same answer; yours does it in one pass, mine keeps the in-between numbers around in case you wanted to look at them (for example, to find the most expensive holding, like the Going Further question asks).
+
+    - **`portfolio_cost = sum(costs)` vs. nothing extra.** Since my version only has a list of costs after the loop, it needs one more line to turn that list into a single number. Yours already has the single number the moment the loop finishes, so no extra line is needed.
+
+    Both are correct. Yours is shorter and uses less memory, since it never stores six separate costs. Mine is useful if a later question needs each individual cost, not just the total.
+    """)
+    return
+
+
+@app.cell
+def _(holdings):
+    def _():
+        costs = {}
+
+        for symbol, shares, price in holdings: 
+            costs[symbol] = shares * price 
+        return
+
+
+    _()
+    return
+
+
+@app.cell
+def _(holdings):
+    def _():
+        costs = {}
+
+        for symbol, shares, price in holdings:
+            costs[symbol] = shares * price
+
+        top_ticker = max(costs, key=costs.get)
+        print(top_ticker, costs[top_ticker])
+        return
+
+
+    _()
     return
 
 
@@ -515,6 +621,52 @@ def _(mo):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    for each ticker, you keep a list of purchases in the order they were bought. Arranged from the oldest to newest so we know which shares to sell first.
+    """)
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _(year_trades):
+    lots = {}
+    gains_by_ticker = {}
+    total_gain = 0
+
+    for _date, _ticker, _action, _shares, _price in year_trades:
+        if _action == "buy":
+            if _ticker not in lots:
+                lots[_ticker] = []
+            lots[_ticker].append([_shares, _price])
+        else:
+            _shares_to_sell = _shares
+            _proceeds = _shares * _price
+            _cost = 0
+            while _shares_to_sell > 0:
+                _lot_shares, _lot_price = lots[_ticker][0]
+                if _lot_shares <= _shares_to_sell:
+                    _cost += _lot_shares * _lot_price
+                    _shares_to_sell -= _lot_shares
+                    lots[_ticker].pop(0)
+                else:
+                    _cost += _shares_to_sell * _lot_price
+                    lots[_ticker][0] = [_lot_shares - _shares_to_sell, _lot_price]
+                    _shares_to_sell = 0
+            _gain = round(_proceeds - _cost, 2)
+            gains_by_ticker[_ticker] = round(gains_by_ticker.get(_ticker, 0) + _gain, 2)
+            total_gain = round(total_gain + _gain, 2)
+
+    gains_by_ticker, total_gain, lots
+    return
+
+
 @app.cell
 def _():
     year_trades = [
@@ -528,7 +680,7 @@ def _():
         ("2026-08-12", "AAPL", "sell", 40, 250.00),
     ]
     year_trades
-    return
+    return (year_trades,)
 
 
 @app.cell(hide_code=True)
