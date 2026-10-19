@@ -137,8 +137,10 @@ def _(annual_rates, loan_amount):
             _interest = round(_balance * _r, 2)
             if _month < _n:
                 _principal = round(_payment - _interest, 2)
+                _payment_due = _payment
             else:
                 _principal = _balance
+                _payment_due = round(_interest + _principal, 2)
             _balance = round(_balance - _principal, 2)
             _schedule.append({
                 "month": _month,
@@ -149,7 +151,17 @@ def _(annual_rates, loan_amount):
             })
         schedules[_term_years] = _schedule
 
-    schedules
+    for _term_years in annual_rates:
+            print(f"\n{_term_years}-year loan schedule")
+            print(f"{'Month':>5} {'Payment':>12} {'Interest':>12} {'Principal':>12} {'Balance':>14}")
+            for _row in schedules[_term_years]:
+                print(
+                    f"{_row['month']:>5} "
+                    f"{_row['payment']:>12,.2f} "
+                    f"{_row['interest']:>12,.2f} "
+                    f"{_row['principal']:>12,.2f} "
+                    f"{_row['balance']:>14,.2f}"
+                )
     return (schedules,)
 
 
@@ -275,7 +287,7 @@ def _(annual_rates, loan_amount, schedules):
         for term_years in annual_rates:
             total_principal_paid = round(sum(row["principal"] for row in schedules[term_years]), 2)
             final_balance = schedules[term_years][-1]["balance"]
-        return print(f"{term_years}-year: total principal paid = ${total_principal_paid:,.2f}, loan amount = ${loan_amount:,.2f}, final balance = {final_balance}")
+            print(f"{term_years}-year: total principal paid =    ${total_principal_paid:,.2f}, loan amount = ${loan_amount:,.2f}, final balance = {final_balance}")
 
 
     _()
