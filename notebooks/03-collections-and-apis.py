@@ -865,6 +865,25 @@ def _(mo):
     return
 
 
+@app.cell
+def _(requests):
+    wellesley_reply = requests.get(
+        "https://geocoding-api.open-meteo.com/v1/search?name=Wellesley&count=1",
+        timeout=10,
+    )
+
+    wellesley_data = wellesley_reply.json()
+
+    first_place = wellesley_data["results"][0]
+
+    latitude = first_place["latitude"]
+    longitude = first_place["longitude"]
+    admin1 = first_place["admin1"]
+
+    print(latitude, longitude, admin1)
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -872,6 +891,26 @@ def _(mo):
 
     **Going further.** Use F's coordinates to ask for Wellesley's current temperature. Build the address with an f-string, so that changing the town changes the forecast.
     """)
+    return
+
+
+@app.cell
+def _(requests):
+    def _():
+        babson_reply = requests.get(
+            "https://geocoding-api.open-meteo.com/v1/search?name=Babson%20Park&count=1",
+            timeout=10,
+        )
+
+        babson_data = babson_reply.json()
+
+        first_babson = babson_data["results"][0]
+
+        print(first_babson["name"])
+        return print(first_babson["admin1"])
+
+
+    _()
     return
 
 
@@ -883,11 +922,69 @@ def _(mo):
     return
 
 
+@app.cell
+def _(requests):
+    weather_reply = requests.get(
+        "https://api.open-meteo.com/v1/forecast"
+        "?latitude=42.2987&longitude=-71.2595"
+        "&daily=temperature_2m_max,temperature_2m_min"
+        "&temperature_unit=fahrenheit&timezone=America/New_York",
+        timeout=10,
+    )
+
+    weather_data = weather_reply.json()
+
+    dates = weather_data["daily"]["time"]
+    highs = weather_data["daily"]["temperature_2m_max"]
+    lows = weather_data["daily"]["temperature_2m_min"]
+
+    weekly_forecast = []
+
+    for date, high, low in zip(dates, highs, lows):
+        day = {
+            "date": date,
+            "high": high,
+            "low": low
+        }
+
+        weekly_forecast.append(day)
+
+    weekly_forecast
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
     > **Advanced · I · A second API.** Kraken, a cryptocurrency exchange, publishes prices with no key: `https://api.kraken.com/0/public/Ticker?pair=XBTUSD`. Request it, then change the pair to `XBTUSX`. Compare the status code and the reply with Open-Meteo's misspelled search. Both answer 200 to a request that failed, and each shows the failure in its own way.
     """)
+    return
+
+
+@app.cell
+def _(requests):
+    kraken_reply = requests.get(
+        "https://api.kraken.com/0/public/Ticker?pair=XBTUSD",
+        timeout=10,
+    )
+
+    # Request an invalid cryptocurrency pair
+    kraken_reply_2 = requests.get(
+        "https://api.kraken.com/0/public/Ticker?pair=XBTUSX",
+        timeout=10,
+    )
+
+    # Convert responses to JSON
+    kraken_data = kraken_reply.json()
+    kraken_data_2 = kraken_reply_2.json()
+
+    # Compare HTTP status codes
+    print("Valid pair status:", kraken_reply.status_code)
+    print("Invalid pair status:", kraken_reply_2.status_code)
+
+    # Compare API error messages
+    print("Valid pair errors:", kraken_data["error"])
+    print("Invalid pair errors:", kraken_data_2["error"])
     return
 
 
