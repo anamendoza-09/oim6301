@@ -211,21 +211,37 @@ def _(towns_from_file):
 
     county_counts = {}
     for town in towns_from_file:
-        county = town["county"]
-        if county in county_counts:
-            county_counts[county] += 1
-        else:
-            county_counts[county] = 1
+        if int(town["average_single_family_value_dollars"]) >= 1000000:
+            county = town["county"]
+
+            if county in county_counts:
+                county_counts[county] += 1
+            else:
+                county_counts[county] = 1
 
     print(county_counts)
-
     return
 
 
 @app.cell
-def _():
-    #Q2
+def _(towns_from_file):
+    def _():
+        #Q2
+        smallest_town = None
+        largest_town = None
 
+        for town in towns_from_file:
+            if smallest_town is None or int(town["population"]) < int(smallest_town["population"]):
+                smallest_town = town
+
+            if largest_town is None or int(town["population"]) > int(largest_town["population"]):
+                largest_town = town
+
+        print("Smallest:", smallest_town["name"], smallest_town["population"])
+        return print("Largest:", largest_town["name"], largest_town["population"])
+
+
+    _()
     return
 
 
@@ -349,6 +365,41 @@ def _(mo):
     return
 
 
+@app.cell
+def _(pl, town_table):
+    def _():
+        county_counts = (
+        town_table
+            .group_by("county")
+            .agg(pl.len().alias("town_count"))
+            .sort("town_count", descending=True)
+        )
+        return county_counts
+
+
+    _()
+    return
+
+
+@app.cell
+def _(town_table):
+    town_table.columns
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    top_five_towns = (
+        town_table
+        .filter(pl.col("population") > 50000)
+        .sort("average_single_family_bill_dollars", descending=True)
+        .head(5)
+    )
+
+    top_five_towns
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -367,7 +418,7 @@ def _(mo, town_table):
         f"""
         SELECT county, COUNT(*) AS towns
         FROM town_table
-        WHERE average_single_family_value_dollars >= 1000000
+        WHERE average_single_family_value_dollars >= 2000000
         GROUP BY county
         ORDER BY towns DESC
         """
@@ -391,6 +442,28 @@ def _(mo):
     In the SQL cell, `1000000` is the bar a town's average home value has to reach. Before you change it to `2000000`, predict in a markdown cell under this question: which counties' counts can go down, and can any go up? Then make the same change in the polars cell that counts million-dollar towns, and run both. *Check yourself: both give Dukes, Middlesex and Norfolk 2 each and Nantucket 1, which is 7 towns.*
 
     **Going further.** Write a SQL query of your own on `town_table`, and check its answer in polars.
+    """)
+    return
+
+
+@app.cell
+def _(pl, town_table):
+    towns_over_2m = (
+        town_table
+        .filter(pl.col("average_single_family_value_dollars") >= 2000000)
+        .group_by("county")
+        .agg(pl.len().alias("towns"))
+        .sort("towns", descending=True)
+    )
+
+    towns_over_2m
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    I believe the counties' counts can decrease or stay the same, but cannot increase.Other counties may stay the same, but no county's count can increase because fewer towns will meet the higher threshold.
     """)
     return
 
@@ -444,6 +517,56 @@ def _(mo):
     *Check yourself: somebody who has not seen this notebook can say what each axis measures.*
 
     **Going further.** Color the bars or dots by a column with `color=`, and explain what the colors add.
+    """)
+    return
+
+
+@app.cell
+def _(town_table):
+    top_10_homes = (
+        town_table
+        .sort("average_single_family_value_dollars", descending=True)
+        .head(10)
+    )
+
+    top_10_homes
+    return (top_10_homes,)
+
+
+@app.cell
+def _(alt, mo, top_10_homes):
+    home_value_chart = mo.ui.altair_chart(
+        top_10_homes.plot.bar(
+            y=alt.Y(
+                "name",
+                sort="-x",
+                title="Town"
+            ),
+            x=alt.X(
+                "average_single_family_value_dollars",
+                title="Average Single-Family Home Value ($)"
+            ),
+            color=alt.Color(
+                "county",
+                title="County"
+            )
+        ).properties(
+            title="10 Massachusetts Towns with the Highest Average Home Values"
+        )
+    )
+
+    home_value_chart
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Question: Which 10 Massachusetts towns have the highest average single-family home values, and which counties are they located in?
+
+    Chart explanation: The horizontal axis shows the average single-family home value in dollars, while the vertical axis shows the town names. The bars are ordered from the highest to the lowest average home value.
+
+    Going further: I used color to represent each town's county. This adds another layer of information because it allows the reader to see whether the towns with the highest home values are concentrated in certain counties or spread across different counties.
     """)
     return
 
