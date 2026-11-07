@@ -197,6 +197,12 @@ def _(ask):
     return
 
 
+@app.cell
+def _(ask):
+    ask("SELECT * FROM counties")
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -254,6 +260,11 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -287,6 +298,40 @@ def _(mo):
 
     **Going further.** Ask the same question of `counties` and `towns` together: which county is each of those five in, and what share of its county's people does each hold? That needs both tables at once, which the topic slides call a join.
     """)
+    return
+
+
+@app.cell
+def _(ask):
+    ask("""
+    SELECT name, average_single_family_bill_dollars FROM towns
+    WHERE population >50000
+    ORDER BY average_single_family_bill_dollars DESC
+    LIMIT 5
+
+    """)
+    return
+
+
+@app.cell
+def _(ask):
+
+    ask("""
+    SELECT
+        t.name AS town,
+        c.name AS county,
+        t.average_single_family_bill_dollars,
+        t.population AS town_population,
+        c.population AS county_population,
+        ROUND(100.0 * t.population / c.population, 2) AS county_population_percentage
+    FROM towns AS t
+    JOIN counties AS c
+        ON t.county = c.name
+    WHERE t.population > 50000
+    ORDER BY t.average_single_family_bill_dollars DESC
+    LIMIT 5
+    """)
+
     return
 
 
