@@ -224,6 +224,50 @@ def _(mo):
     return
 
 
+@app.cell
+def _(ask, database, duckdb):
+    with duckdb.connect(database) as _con:
+        _con.execute("DROP TABLE IF EXISTS town_bills")
+        _con.execute("""
+            CREATE TABLE town_bills (
+                town                               VARCHAR NOT NULL REFERENCES towns(name),
+                year                               INTEGER NOT NULL,
+                average_single_family_bill_dollars INTEGER CHECK (average_single_family_bill_dollars >= 0),
+                PRIMARY KEY (town, year)
+            )
+        """)
+        _con.execute("""
+            INSERT INTO town_bills (town, year, average_single_family_bill_dollars)
+            VALUES ('Wellesley', 2003, 6642),
+                   ('Wellesley', 2004, 7320)
+        """)
+
+    town_bills_ready = True
+    ask("SELECT * FROM town_bills")
+    return (town_bills_ready,)
+
+
+@app.cell
+def _(database, duckdb, town_bills_ready):
+    town_bills_ready
+
+    _bad_inserts = [
+        "INSERT INTO town_bills VALUES ('Wellesley', 2003, 6642)",
+        "INSERT INTO town_bills VALUES ('Atlantis', 2003, 5000)",
+    ]
+    _messages = []
+    for _sql in _bad_inserts:
+        try:
+            with duckdb.connect(database) as _con:
+                _con.execute(_sql)
+            _messages.append("Accepted (this should NOT happen)")
+        except duckdb.Error as _e:
+            _messages.append(str(_e))
+
+    _messages
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -261,7 +305,23 @@ def _(mo):
 
 
 @app.cell
-def _():
+def _(database, duckdb):
+    _bad_towns = {
+        "name already there": "INSERT INTO towns VALUES ('Wellesley', 'Norfolk', 29000, 100000, 15000)",
+        "population of zero": "INSERT INTO towns VALUES ('Testville', 'Norfolk', 0, 50000, 8000)",
+        "county doesn't exist": "INSERT INTO towns VALUES ('Nowhere', 'Atlantis', 10, 0, 0)",
+    }
+
+    _messages = {}
+    for _rule, _sql in _bad_towns.items():
+        try:
+            with duckdb.connect(database) as _con:
+                _con.execute(_sql)
+            _messages[_rule] = "accepted"
+        except duckdb.ConstraintException as _error:
+            _messages[_rule] = str(_error).splitlines()[0]
+
+    _messages
     return
 
 
@@ -331,7 +391,6 @@ def _(ask):
     ORDER BY t.average_single_family_bill_dollars DESC
     LIMIT 5
     """)
-
     return
 
 
