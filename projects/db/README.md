@@ -75,3 +75,12 @@ erDiagram
 
 ## 4. Design Choices
 
+## 4. Design Choices
+
+I am using an invented member ID instead of the phone number or email the café already has. Phone numbers can change, and giving an email when signing up is optional, so neither one is reliable as a key. A member ID never changes.
+
+An order doesn't have to be connected to a member, because non-members also buy from the coffee shop. A member might also join and never place an order, and an order line can have no add-ons at all. Email is optional too.
+
+An order's payments must add up to the order total (its lines plus their add-ons). A `CHECK` only looks at one row at a time, and this rule needs to add up rows from several tables, so I will check it with a query in Part B (question 4) that lists the orders where payments don't match the total.
+
+I checked the `line_options` table. Both `line_id` and `option_id` are marked as the primary key together, which means the same add-on can't appear twice on the same line. That matches the scenario's rule that an option appears at most once on a line.
