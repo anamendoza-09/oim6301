@@ -416,6 +416,22 @@ def _(ask):
     return
 
 
+@app.cell
+def _(ask):
+    ask("""
+    SELECT county, count(*) AS town_count, sum(population) AS total_pop, round(avg(population)) AS avg_pop, round(avg(average_single_family_bill_dollars), 2) AS avg_bill, max(population) AS max_pop
+    FROM towns
+    GROUP BY county
+    """
+    )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -431,7 +447,7 @@ def _(ask):
         FROM towns
         WHERE average_single_family_bill_dollars > 10000
         GROUP BY county
-        HAVING count(*) > 5
+        -- HAVING count(*) > 5 AND county LIKE '%sex'
         ORDER BY towns DESC
     """)
     return
